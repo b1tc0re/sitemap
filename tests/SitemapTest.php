@@ -3,6 +3,18 @@
 class SitemapTest extends TestCase
 {
     /**
+     * Root document
+     * @var string
+     */
+    protected $documentRoot = __DIR__ . DIRECTORY_SEPARATOR;
+
+    /**
+     * Sitemap filename
+     * @var string
+     */
+    protected $fileName = 'sitemap.xml';
+
+    /**
      * Подтверждает действительность sitemap согласно схеме XSD
      *
      * @param string $fileName
@@ -15,7 +27,7 @@ class SitemapTest extends TestCase
 
         $xml = new \DOMDocument();
         $xml->loadXML($content);
-        self::assertTrue($xml->schemaValidate(__DIR__ . '/' . $xsdFileName));
+        self::assertTrue($xml->schemaValidate($this->documentRoot . $xsdFileName));
     }
 
     /**
@@ -29,7 +41,7 @@ class SitemapTest extends TestCase
         $xml = new \DOMDocument();
         $xml->loadXML($content);
 
-        self::assertTrue($xml->schemaValidate(__DIR__ . '/siteindex.xsd'));
+        self::assertTrue($xml->schemaValidate($this->documentRoot . '/siteindex.xsd'));
     }
 
     /**
@@ -56,7 +68,7 @@ class SitemapTest extends TestCase
      */
     public function testWriteSitemap()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__ . '/sitemap.xml');
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . 'sitemap.xml', false, $this->documentRoot);
         $map->addItem('http://example.com/1');
         $map->addItem('http://example.com/2');
 
@@ -75,9 +87,9 @@ class SitemapTest extends TestCase
      */
     public function testWriteLanguages()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__ . '/sitemap.xml');
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . 'sitemap.xml', false, $this->documentRoot);
         $map->addItem([
-            'ru' => 'http://example.com/1/',
+            'ru' => 'http://example.com/1/81/',
             'en' => 'http://example.com/en/1/',
             'us' => 'http://example.com/us/1/',
         ]);
@@ -93,6 +105,7 @@ class SitemapTest extends TestCase
 
         self::assertFileExists($fileName);
         $this->assertIsValidSitemap($fileName, true);
+
         unlink($fileName);
     }
 
@@ -101,9 +114,13 @@ class SitemapTest extends TestCase
      */
     public function testWriteOverflowUrls()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__ . '/sitemap.xml', false, __DIR__);
-        $map->setMaxUrls(300);
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap(
+            $fileName = $this->documentRoot . 'sitemap_w.xml',
+            false,
+            $this->documentRoot
+        );
 
+        $map->setMaxUrls(300);
 
         for ($i = 0; $i < 600; $i++)
         {
@@ -113,8 +130,8 @@ class SitemapTest extends TestCase
         $map->write();
 
         self::assertFileExists($fileName);
-        self::assertFileExists($path1 = __DIR__ . '/0_sitemap.xml');
-        self::assertFileExists($path2 = __DIR__ . '/1_sitemap.xml');
+        self::assertFileExists($path1 = $this->documentRoot. '0_sitemap_w.xml');
+        self::assertFileExists($path2 = $this->documentRoot . '1_sitemap_w.xml');
 
         $this->assertIsValidIndex($fileName);
         $this->assertIsValidSitemap($path1);
@@ -155,7 +172,7 @@ class SitemapTest extends TestCase
         $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__ . '/sitemap.xml');
 
         $map->addItem([
-            'ru' => 'http://example.com/1/',
+            'ru' => 'http://example.com/1/159',
             'en' => 'http://example.com/en/1/',
             'us' => 'http://example.com/us/1/',
         ]);
@@ -183,7 +200,8 @@ class SitemapTest extends TestCase
         ]);
 
         self::assertEquals($map->countItems(), 3);
-        unset($fileName);
+
+        unlink($fileName);
     }
 
     /**
