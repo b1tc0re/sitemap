@@ -1,20 +1,23 @@
-<?php namespace DeftCMS\Components\b1tc0re\Sitemap;
+<?php
+
+namespace DeftCMS\Components\b1tc0re\Sitemap;
 
 use DeftCMS\Components\b1tc0re\Sitemap\Models\LocationCollection;
 use DeftCMS\Components\b1tc0re\Sitemap\Models\UrlModel;
 
 /**
- * Класс для генерации SitemapIndex
+ * Класс для генерации SitemapIndex.
  *
- * @package     DeftCMS
  * @author	    b1tc0re
  * @copyright   2020-2021 DeftCMS (https://deftcms.ru/)
+ *
  * @since	    Version 0.0.9a
  */
 class Index
 {
     /**
-     * Путь к файлу карты сайта
+     * Путь к файлу карты сайта.
+     *
      * @var string
      */
     protected $filePath;
@@ -25,7 +28,8 @@ class Index
     protected $collection;
 
     /**
-     * Использовать сжатие
+     * Использовать сжатие.
+     *
      * @var bool
      */
     protected $useGzipCompress = false;
@@ -34,19 +38,20 @@ class Index
      * Конструктор
      *
      * @param string $filePath путь к файлу карты сайта
-     * @param bool $useGzip Использовать сжатие
+     * @param bool   $useGzip  Использовать сжатие
      */
     public function __construct($filePath, bool $useGzip = false)
     {
-        $this->filePath         = $filePath;
-        $this->useGzipCompress  = $useGzip;
-        $this->collection       = new LocationCollection();
+        $this->filePath = $filePath;
+        $this->useGzipCompress = $useGzip;
+        $this->collection = new LocationCollection();
 
         file_exists($this->filePath) && $this->fillCollection();
     }
 
     /**
-     * Получить путь к файлу для записи
+     * Получить путь к файлу для записи.
+     *
      * @return string
      */
     public function getFilePath()
@@ -55,10 +60,10 @@ class Index
     }
 
     /**
-     * Добавить Sitemap
+     * Добавить Sitemap.
      *
-     * @param string $location      - Указывает местоположение файла Sitemap
-     * @param integer $lastModified - Указывает время изменения соответствующего файла Sitemap.
+     * @param string $location     - Указывает местоположение файла Sitemap
+     * @param int    $lastModified - Указывает время изменения соответствующего файла Sitemap.
      *
      * @return $this
      */
@@ -66,7 +71,7 @@ class Index
     {
         $this->collection->addNotExist(new Models\UrlModel([
             'location'      => $location,
-            'lastModified'  => $lastModified
+            'lastModified'  => $lastModified,
         ]));
 
         return $this;
@@ -74,6 +79,7 @@ class Index
 
     /**
      * Количество карт
+     *
      * @return int
      */
     public function countItems()
@@ -82,7 +88,7 @@ class Index
     }
 
     /**
-     * Записать данные в карту
+     * Записать данные в карту.
      *
      * @return void
      */
@@ -98,8 +104,7 @@ class Index
         /**
          * @var UrlModel $item
          */
-        foreach ($this->collection as $item)
-        {
+        foreach ($this->collection as $item) {
             $writer->startElement('sitemap');
             $writer->writeElement('loc', $item->getLocation());
             $writer->writeElement('lastmod', $item->getLastModified());
@@ -111,15 +116,15 @@ class Index
 
         $path = $this->getFilePath();
 
-        if ( $this->useGzipCompress ) {
-            $path = 'compress.zlib://' . $path;
+        if ($this->useGzipCompress) {
+            $path = 'compress.zlib://'.$path;
         }
 
         file_put_contents($path, $writer->flush());
     }
 
     /**
-     * Наполнить колекцию (прочитать карту сайта)
+     * Наполнить колекцию (прочитать карту сайта).
      *
      * @return void
      */
@@ -127,8 +132,7 @@ class Index
     {
         $content = file_get_contents($this->getFilePath());
 
-        if( true === $this->useGzipCompress && $gzcontent = gzinflate(substr($content,10,-8)) )
-        {
+        if (true === $this->useGzipCompress && $gzcontent = gzinflate(substr($content, 10, -8))) {
             $content = $gzcontent;
         }
 
@@ -137,12 +141,9 @@ class Index
          */
         $reader = @simplexml_load_string($content);
 
-        if( $reader && property_exists($reader, 'sitemap') )
-        {
-            foreach ($reader->sitemap as $element)
-            {
-                if( property_exists($element, 'loc') && property_exists($element, 'lastmod'))
-                {
+        if ($reader && property_exists($reader, 'sitemap')) {
+            foreach ($reader->sitemap as $element) {
+                if (property_exists($element, 'loc') && property_exists($element, 'lastmod')) {
                     $this->addSitemap($element->loc, strtotime($element->lastmod));
                 }
             }
