@@ -64,15 +64,10 @@ class Index
      */
     public function addSitemap($location, $lastModified = null)
     {
-        $map = new Models\UrlModel([
+        $this->collection->addNotExist(new Models\UrlModel([
             'location'      => $location,
             'lastModified'  => $lastModified
-        ]);
-
-        if( false === $this->collection->exist($map) )
-        {
-            $this->collection->add($map);
-        }
+        ]));
 
         return $this;
     }
@@ -88,6 +83,8 @@ class Index
 
     /**
      * Записать данные в карту
+     *
+     * @return void
      */
     public function write()
     {
@@ -140,7 +137,7 @@ class Index
          */
         $reader = @simplexml_load_string($content);
 
-        if( $reader && property_exists($reader, 'sitemap')  )
+        if( $reader && property_exists($reader, 'sitemap') )
         {
             foreach ($reader->sitemap as $element)
             {
