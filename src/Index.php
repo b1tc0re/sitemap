@@ -79,6 +79,18 @@ class Index
     }
 
     /**
+     * Удалить карту сайта
+     * @param string $location - Указывает местоположение файла Sitemap
+     * @return void
+     */
+    public function removeSitemap($location)
+    {
+        $this->collection->remove(new UrlModel([
+            'location' => $location
+        ]));
+    }
+
+    /**
      * Количество карт
      *
      * @return int
