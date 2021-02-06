@@ -1,25 +1,27 @@
-<?php namespace DeftCMS\Components\b1tc0re\Sitemap\Models;
+<?php
+
+namespace DeftCMS\Components\b1tc0re\Sitemap\Models;
 
 use Traversable;
 
 /**
- *
- * @package     DeftCMS
  * @author	    b1tc0re
  * @copyright   2020-2021 DeftCMS (https://deftcms.ru/)
- * @since	    Version 0.0.9a
  *
+ * @since	    Version 0.0.9a
  */
 class LocationCollection implements \IteratorAggregate
 {
     /**
-     * Колекция
+     * Колекция.
+     *
      * @var array
      */
-    private $items = array();
+    private $items = [];
 
     /**
-     * Количество элементов
+     * Количество элементов.
+     *
      * @var int
      */
     private $count = 0;
@@ -36,11 +38,13 @@ class LocationCollection implements \IteratorAggregate
     }
 
     /**
-     * Retrieve an external iterator
+     * Retrieve an external iterator.
      *
      * @link  https://php.net/manual/en/iteratoraggregate.getiterator.php
+     *
      * @return Traversable An instance of an object implementing <b>Iterator</b> or
-     * <b>Traversable</b>
+     *                     <b>Traversable</b>
+     *
      * @since 5.0.0
      */
     public function getIterator()
@@ -50,18 +54,19 @@ class LocationCollection implements \IteratorAggregate
 
     /**
      * Добавить новый адрес если он не сушествует
+     *
      * @param UrlModel $value
      */
     public function addNotExist(UrlModel $value)
     {
-        if( false === $this->exist($value) )
-        {
+        if (false === $this->exist($value)) {
             $this->add($value);
         }
     }
 
     /**
      * Добавить новый адрес
+     *
      * @param UrlModel $value
      */
     public function add(UrlModel $value)
@@ -70,7 +75,8 @@ class LocationCollection implements \IteratorAggregate
     }
 
     /**
-     * Количество элементов
+     * Количество элементов.
+     *
      * @return int
      */
     public function count()
@@ -79,8 +85,10 @@ class LocationCollection implements \IteratorAggregate
     }
 
     /**
-     * Проверить если есть указанная карта
+     * Проверить если есть указанная карта.
+     *
      * @param UrlModel $value
+     *
      * @return bool
      */
     public function exist(UrlModel $value)
@@ -88,39 +96,37 @@ class LocationCollection implements \IteratorAggregate
         /**
          * @var UrlModel $item
          */
-       foreach ($this->items as $item)
-       {
-           if( $item->getLocation() === $value->getLocation() )
-           {
-               return true;
-           }
-       }
+        foreach ($this->items as $item) {
+            if ($item->getLocation() === $value->getLocation()) {
+                return true;
+            }
+        }
 
-       return false;
+        return false;
     }
 
     /**
-     * Разбивает колекцию на части
-     * @param int $length   - Количество элементов в массиве
-     * @param int $chunks   - Количество массивов
+     * Разбивает колекцию на части.
+     *
+     * @param int $length - Количество элементов в массиве
+     * @param int $chunks - Количество массивов
      *
      * @return LocationCollection[]
      */
     public function chunk(int $length, &$chunks = 0)
     {
-        if( $this->count() <= $length )
-        {
+        if ($this->count() <= $length) {
             return [$this];
         }
 
         $collections = [];
 
-        foreach (array_chunk($this->items, $length, true) as $chunk)
-        {
+        foreach (array_chunk($this->items, $length, true) as $chunk) {
             $collections[] = new self($chunk);
         }
 
         $chunks = count($collections);
+
         return $collections;
     }
 

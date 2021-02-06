@@ -1,25 +1,27 @@
-<?php namespace DeftCMS\Components\b1tc0re\Sitemap\Models;
+<?php
+
+namespace DeftCMS\Components\b1tc0re\Sitemap\Models;
 
 /**
- * Модель для каждой записи URL-адреса карты сайта
+ * Модель для каждой записи URL-адреса карты сайта.
  *
  *
- * @package     DeftCMS
  * @author	    b1tc0re
  * @copyright   2020-2021 DeftCMS (https://deftcms.ru/)
+ *
  * @since	    Version 0.0.9a
  */
 class UrlModel
 {
     /**
-     * URL-адрес страницы
+     * URL-адрес страницы.
      *
      * @var string
      */
     protected $location;
 
     /**
-     * Ссылки на все языковые и региональные версии страницы, включая основную
+     * Ссылки на все языковые и региональные версии страницы, включая основную.
      *
      * @var array
      */
@@ -33,14 +35,14 @@ class UrlModel
     protected $lastModified;
 
     /**
-     * Вероятная частота изменения этой страницы
+     * Вероятная частота изменения этой страницы.
      *
      * @var string
      */
     protected $changeFrequency = 'daily';
 
     /**
-     * Priority (0.0-1.0). Default  0.5
+     * Priority (0.0-1.0). Default  0.5.
      *
      * @var string
      */
@@ -53,11 +55,9 @@ class UrlModel
      */
     public function __construct(array $params)
     {
-        foreach ($params as $name => $value)
-        {
-            if( property_exists($this, $name) )
-            {
-                $setter = "set" . ucfirst($name);
+        foreach ($params as $name => $value) {
+            if (property_exists($this, $name)) {
+                $setter = 'set'.ucfirst($name);
                 $this->$setter($value);
             }
         }
@@ -80,16 +80,17 @@ class UrlModel
 
     /**
      * Устоновить URL-адрес страницы.
+     *
      * @param string $location
      *
      * @throws \InvalidArgumentException
+     *
      * @return $this
      */
     public function setLocation(string $location)
     {
-        if( !filter_var($location, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED) )
-        {
-            throw new \InvalidArgumentException("Please specify valid url.");
+        if (!filter_var($location, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED)) {
+            throw new \InvalidArgumentException('Please specify valid url.');
         }
 
         $this->location = $location;
@@ -98,7 +99,7 @@ class UrlModel
     }
 
     /**
-     * Устоновить приоритетность URL относительно других URL на Вашем сайте
+     * Устоновить приоритетность URL относительно других URL на Вашем сайте.
      *
      * @param string|null $priority Default 0.5
      *
@@ -106,8 +107,7 @@ class UrlModel
      */
     public function setPriority(string $priority = null)
     {
-        if ( $priority === null || !is_numeric($priority) || $priority < 0 || $priority > 1)
-        {
+        if ($priority === null || !is_numeric($priority) || $priority < 0 || $priority > 1) {
             $priority = '0.5';
         }
 
@@ -117,15 +117,15 @@ class UrlModel
     }
 
     /**
-     * Устоновить частоту изменения этой страницы
+     * Устоновить частоту изменения этой страницы.
+     *
      * @param string|null $changeFrequency
      *
      * @return $this
      */
     public function setChangeFrequency(string $changeFrequency = null)
     {
-        if( !in_array($changeFrequency, FrequencyTypes::$validFrequency, true) )
-        {
+        if (!in_array($changeFrequency, FrequencyTypes::$validFrequency, true)) {
             $changeFrequency = FrequencyTypes::DAILY;
         }
 
@@ -135,7 +135,8 @@ class UrlModel
     }
 
     /**
-     * Устоновить ссылки на все языковые и региональные версии страницы, включая основную
+     * Устоновить ссылки на все языковые и региональные версии страницы, включая основную.
+     *
      * @param array $alternates
      *
      * @return $this
@@ -143,6 +144,7 @@ class UrlModel
     public function setAlternates(array $alternates)
     {
         $this->alternates = $alternates;
+
         return $this;
     }
 
@@ -179,7 +181,7 @@ class UrlModel
     }
 
     /**
-     * Ссылки на все языковые и региональные версии страницы, включая основную
+     * Ссылки на все языковые и региональные версии страницы, включая основную.
      *
      * @return array
      */
