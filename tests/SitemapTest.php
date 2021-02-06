@@ -10,15 +10,11 @@ class SitemapTest extends TestCase
      */
     protected function assertIsValidSitemap($fileName, $xhtml = false)
     {
-        $gzStartSequence = pack('H*', '1f8b08');
-        $content         = file_get_contents($fileName);
-        (strpos($content, $gzStartSequence, 1) === false) && $content = gzinflate(substr($content,10,-8));
-
+        $content = $this->getIsGzipContent(file_get_contents($fileName), $fileName);
         $xsdFileName = $xhtml ? 'sitemap_xhtml.xsd' : 'sitemap.xsd';
 
         $xml = new \DOMDocument();
         $xml->loadXML($content);
-
         self::assertTrue($xml->schemaValidate(__DIR__ . '/' . $xsdFileName));
     }
 
@@ -29,14 +25,30 @@ class SitemapTest extends TestCase
      */
     protected function assertIsValidIndex($fileName)
     {
-        $gzStartSequence = pack('H*', '1f8b08');
-        $content         = file_get_contents($fileName);
-        (strpos($content, $gzStartSequence, 1) === false) && $content = gzinflate(substr($content,10,-8));
-
+        $content = $this->getIsGzipContent(file_get_contents($fileName), $fileName);
         $xml = new \DOMDocument();
         $xml->loadXML($content);
 
         self::assertTrue($xml->schemaValidate(__DIR__ . '/siteindex.xsd'));
+    }
+
+    /**
+     * Проверить если содержимое является сжатым gzip
+     * @param string $content
+     * @param string $path
+     *
+     * @return string
+     */
+    protected function getIsGzipContent($content, $path)
+    {
+        $startSequence = pack('H*', '1F8B08');
+
+        if( strpos($content, $startSequence, 1) !== false )
+        {
+            return $content = gzinflate(substr($content,10,-8));
+        }
+
+        return pathinfo($path, PATHINFO_EXTENSION) !== 'gz' ? $content : gzinflate(substr($content,10,-8));
     }
 
     /**
