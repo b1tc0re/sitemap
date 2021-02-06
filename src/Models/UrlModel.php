@@ -13,27 +13,36 @@ class UrlModel
 {
     /**
      * URL-адрес страницы
+     *
      * @var string
      */
     protected $location;
 
     /**
+     * Ссылки на все языковые и региональные версии страницы, включая основную
+     *
+     * @var array
+     */
+    protected $alternates = [];
+
+    /**
      * Дата последнего изменения страницы.
      *
-     * @var null|int
+     * @var string
      */
-    protected $lastModified = null;
+    protected $lastModified;
 
     /**
      * Вероятная частота изменения этой страницы
      *
-     * @var null|string
+     * @var string
      */
     protected $changeFrequency = 'daily';
 
     /**
      * Priority (0.0-1.0). Default  0.5
-     * @var null|string
+     *
+     * @var string
      */
     protected $priority = '0.5';
 
@@ -126,6 +135,18 @@ class UrlModel
     }
 
     /**
+     * Устоновить ссылки на все языковые и региональные версии страницы, включая основную
+     * @param array $alternates
+     *
+     * @return $this
+     */
+    public function setAlternates(array $alternates)
+    {
+        $this->alternates = $alternates;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getChangeFrequency()
@@ -134,7 +155,7 @@ class UrlModel
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function getLastModified()
     {
@@ -155,5 +176,15 @@ class UrlModel
     public function getPriority()
     {
         return $this->priority;
+    }
+
+    /**
+     * Ссылки на все языковые и региональные версии страницы, включая основную
+     *
+     * @return array
+     */
+    public function getAlternates()
+    {
+        return $this->alternates;
     }
 }
