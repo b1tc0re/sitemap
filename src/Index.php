@@ -124,6 +124,7 @@ class Index
     /**
      * Наполнить колекцию (прочитать карту сайта)
      *
+     * @return void
      */
     protected function fillCollection()
     {
