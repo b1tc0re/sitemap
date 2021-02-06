@@ -1,6 +1,6 @@
 # DeftCMS Sitemap generator package
 
-## Installation
+## Установка
 
 Используйте команду 
 
