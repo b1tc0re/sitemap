@@ -71,15 +71,16 @@ class Sitemap
      * @param string $filePath     путь к файлу карты
      * @param bool   $useGzip      пользовать сжатие
      * @param string $documentRoot Путь к корню сайта
+     * @param bool   $read  Прочитать карту сайта если она существует
      */
-    public function __construct($filePath, $useGzip = false, $documentRoot = null)
+    public function __construct($filePath, $useGzip = false, $documentRoot = null, $read = true)
     {
         $this->filePath = $filePath;
         $this->useGzipCompress = $useGzip;
         $this->collection = new LocationCollection();
 
         $this->setDocumentRoot($documentRoot);
-        file_exists($this->filePath) && $this->fillCollection($this->getFilePath());
+        $read && file_exists($this->filePath) && $this->fillCollection($this->getFilePath());
     }
 
     /**

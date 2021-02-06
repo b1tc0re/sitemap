@@ -39,14 +39,15 @@ class Index
      *
      * @param string $filePath путь к файлу карты сайта
      * @param bool   $useGzip  Использовать сжатие
+     * @param bool   $read  Прочитать карту сайта если она существует
      */
-    public function __construct($filePath, bool $useGzip = false)
+    public function __construct($filePath, bool $useGzip = false, $read = true)
     {
         $this->filePath = $filePath;
         $this->useGzipCompress = $useGzip;
         $this->collection = new LocationCollection();
 
-        file_exists($this->filePath) && $this->fillCollection();
+        $read && file_exists($this->filePath) && $this->fillCollection();
     }
 
     /**
