@@ -1,0 +1,31 @@
+{
+  "name": "b1tc0re/sitemap",
+  "description": "DeftCMS Sitemap generator package",
+  "keywords": [
+    "b1tc0re",
+    "Sitemap"
+  ],
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "b1tc0re",
+      "email": "b1tc0re@yandex.ru",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "ext-xmlwriter": "*",
+    "ext-simplexml": "*",
+    "ext-zlib": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "8.5.14"
+  },
+  "autoload": {
+    "psr-4": {
+      "DeftCMS\\Components\\b1tc0re\\Sitemap\\": "src/"
+    }
+  }
+}
