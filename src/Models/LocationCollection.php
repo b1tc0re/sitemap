@@ -2,6 +2,7 @@
 
 namespace DeftCMS\Components\b1tc0re\Sitemap\Models;
 
+use Countable;
 use Traversable;
 
 /**
@@ -10,7 +11,7 @@ use Traversable;
  *
  * @since	    Version 0.0.9a
  */
-class LocationCollection implements \IteratorAggregate
+class LocationCollection implements \IteratorAggregate, Countable
 {
     /**
      * Колекция.
@@ -75,6 +76,19 @@ class LocationCollection implements \IteratorAggregate
     }
 
     /**
+     * Удалить элемент
+     *
+     * @param UrlModel $value
+     */
+    public function remove(UrlModel $value)
+    {
+        if( $index = $this->search($value) )
+        {
+            unset($this->items[$index]);
+        }
+    }
+
+    /**
      * Количество элементов.
      *
      * @return int
@@ -93,16 +107,7 @@ class LocationCollection implements \IteratorAggregate
      */
     public function exist(UrlModel $value)
     {
-        /**
-         * @var UrlModel $item
-         */
-        foreach ($this->items as $item) {
-            if ($item->getLocation() === $value->getLocation()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->search($value) !== false;
     }
 
     /**
@@ -138,5 +143,28 @@ class LocationCollection implements \IteratorAggregate
     public function first()
     {
         return current($this->items);
+    }
+
+    /**
+     * Получить индекс найденого элемента
+     *
+     * @param UrlModel $element
+     *
+     * @return int|false
+     */
+    public function search(UrlModel $element)
+    {
+        /**
+         * @var UrlModel $item
+         */
+        foreach ($this->items as $index => $item)
+        {
+            if ($item->getLocation() === $element->getLocation())
+            {
+                return $this->items[$index];
+            }
+        }
+
+        return false;
     }
 }
