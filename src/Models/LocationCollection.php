@@ -96,7 +96,7 @@ class LocationCollection implements \IteratorAggregate, Countable
      */
     public function remove(UrlModel $value)
     {
-        if ($index = $this->search($value)) {
+        if (false !== ($index = $this->search($value))) {
             unset($this->items[$index]);
             $this->count--;
         }
