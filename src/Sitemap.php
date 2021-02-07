@@ -265,7 +265,7 @@ class Sitemap
     protected function writeToDisk(\XMLWriter $writer, $path)
     {
         if ($this->useGzipCompress) {
-            pathinfo($path, PATHINFO_EXTENSION) !== 'gz' && $path = $this->filePath = $this->filePath . '.gz';
+            pathinfo($path, PATHINFO_EXTENSION) !== 'gz' && $path = $this->filePath = $this->filePath.'.gz';
             $path = 'compress.zlib://'.$path;
         }
 
