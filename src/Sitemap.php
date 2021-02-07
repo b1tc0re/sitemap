@@ -160,6 +160,7 @@ class Sitemap
     public function removeItem($location)
     {
         $this->collection->remove(new UrlModel(['location' => $location]));
+
         return $this;
     }
 
