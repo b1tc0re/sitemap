@@ -186,9 +186,15 @@ class Sitemap
 
     /**
      * Записать данные в карту.
+     *
+     * @param null|bool $gzip
+     *
+     * @return $this
      */
-    public function write()
+    public function write($gzip = null)
     {
+        $gzip === null || $this->useGzipCompress = $gzip;
+
         $collections = $this->collection->chunk($this->maxUrls, $chunks);
 
         $chunks > 1 && $indexMap = new Index($this->getFilePath(), $this->useGzipCompress);
@@ -246,6 +252,8 @@ class Sitemap
         }
 
         $chunks > 1 && $indexMap->write();
+
+        return $this;
     }
 
     /**
@@ -257,6 +265,7 @@ class Sitemap
     protected function writeToDisk(\XMLWriter $writer, $path)
     {
         if ($this->useGzipCompress) {
+            pathinfo($path, PATHINFO_EXTENSION) !== 'gz' && $path = $this->filePath = $this->filePath . '.gz';
             $path = 'compress.zlib://'.$path;
         }
 
