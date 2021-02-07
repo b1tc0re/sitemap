@@ -11,9 +11,7 @@ class IndexTest extends TestCase
      */
     protected function assertIsValidIndex($fileName)
     {
-        $gzStartSequence = pack('H*', '1f8b08');
-        $content = file_get_contents($fileName);
-        (strpos($content, $gzStartSequence, 1) === false) && $content = gzinflate(substr($content, 10, -8));
+        $content = $this->getIsGzipContent(file_get_contents($fileName), $fileName);
 
         $xml = new \DOMDocument();
         $xml->loadXML($content);
@@ -22,9 +20,28 @@ class IndexTest extends TestCase
     }
 
     /**
+     * Проверить если содержимое является сжатым gzip.
+     *
+     * @param string $content
+     * @param string $path
+     *
+     * @return string
+     */
+    protected function getIsGzipContent($content, $path)
+    {
+        $startSequence = pack('H*', '1F8B08');
+
+        if (strpos($content, $startSequence, 1) !== false) {
+            return $content = gzinflate(substr($content, 10, -8));
+        }
+
+        return pathinfo($path, PATHINFO_EXTENSION) !== 'gz' ? $content : gzinflate(substr($content, 10, -8));
+    }
+
+    /**
      * Запись карты сайта.
      */
-    public function _testWritingFile()
+    public function testWritingFile()
     {
         $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml');
         $index->addSitemap('http://example.com/sitemap.xml');
@@ -40,15 +57,15 @@ class IndexTest extends TestCase
     /**
      * Прочитать карту сайта.
      */
-    public function _testReadFile()
+    public function testReadFile()
     {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml');
+        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml', false, false);
         $index->addSitemap('http://example.com/sitemap.xml');
         $index->addSitemap('http://example.com/sitemap_2.xml', time());
         $index->write();
 
         $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName);
-        $index->addSitemap('http://example.com/sitemap_2.xml');
+        $index->addSitemap('http://example.com/sitemap_3.xml');
 
         self::assertEquals($index->countItems(), 3);
         $this->assertIsValidIndex($fileName);
@@ -124,6 +141,29 @@ class IndexTest extends TestCase
         $index->addSitemap('http://example.com/sitemap_3.xml', time());
 
         self::assertEquals($index->countItems(), 3);
+
+        unlink($fileName);
+    }
+
+    /**
+     * Проверка удаление элемента
+     */
+    public function testRemoveMethod()
+    {
+        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml', false, false);
+        $index->addSitemap('http://example.com/sitemap.xml');
+        $index->addSitemap('http://example.com/sitemap_2.xml', time());
+        $index->write();
+
+        self::assertEquals($index->countItems(), 2);
+
+        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml');
+        $index->removeSitemap('http://example.com/sitemap_3.xml', time());
+        $index->write();
+
+        self::assertEquals($index->countItems(), 2);
+        self::assertFileExists($fileName);
+        $this->assertIsValidIndex($fileName);
 
         unlink($fileName);
     }
