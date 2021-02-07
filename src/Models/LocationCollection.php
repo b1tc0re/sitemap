@@ -72,12 +72,9 @@ class LocationCollection implements \IteratorAggregate, Countable
      */
     public function addUpdateExist(UrlModel $value)
     {
-        if( false !== ($index = $this->search($value)) )
-        {
+        if (false !== ($index = $this->search($value))) {
             $this->items[$index] = $value;
-        }
-        else
-        {
+        } else {
             $this->add($value);
         }
     }
