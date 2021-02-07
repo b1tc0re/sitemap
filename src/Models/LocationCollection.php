@@ -82,8 +82,7 @@ class LocationCollection implements \IteratorAggregate, Countable
      */
     public function remove(UrlModel $value)
     {
-        if( $index = $this->search($value) )
-        {
+        if ($index = $this->search($value)) {
             unset($this->items[$index]);
         }
     }
@@ -146,7 +145,7 @@ class LocationCollection implements \IteratorAggregate, Countable
     }
 
     /**
-     * Получить индекс найденого элемента
+     * Получить индекс найденого элемента.
      *
      * @param UrlModel $element
      *
@@ -157,10 +156,8 @@ class LocationCollection implements \IteratorAggregate, Countable
         /**
          * @var UrlModel $item
          */
-        foreach ($this->items as $index => $item)
-        {
-            if ($item->getLocation() === $element->getLocation())
-            {
+        foreach ($this->items as $index => $item) {
+            if ($item->getLocation() === $element->getLocation()) {
                 return $this->items[$index];
             }
         }

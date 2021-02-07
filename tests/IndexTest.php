@@ -146,7 +146,7 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Проверка удаление элемента
+     * Проверка удаление элемента.
      */
     public function testRemoveMethod()
     {

@@ -275,11 +275,11 @@ class SitemapTest extends TestCase
     }
 
     /**
-     * Проверка метода удаления
+     * Проверка метода удаления.
      */
     public function testRemoveMethod()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . 'sitemap.xml');
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.'sitemap.xml');
         $map->addItem('http://example.com/1');
         $map->addItem('http://example.com/2');
         $map->write();

@@ -124,6 +124,7 @@ class Sitemap
      * @param null         $lastMod    - Дата последнего изменения файла.
      * @param null         $changeFreq - Вероятная частота изменения этой страницы
      * @param null         $priority   - Приоритетность URL относительно других URL на Вашем сайте.
+     *
      * @return void
      */
     public function addItem($location, $lastMod = null, $changeFreq = null, $priority = null)
@@ -149,12 +150,14 @@ class Sitemap
 
     /**
      * Удалить элемент
+     *
      * @param string $location
+     *
      * @return void
      */
     public function removeItem($location)
     {
-        $this->collection->remove(new UrlModel([ 'location' => $location ]));
+        $this->collection->remove(new UrlModel(['location' => $location]));
     }
 
     /**
