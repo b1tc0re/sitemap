@@ -91,7 +91,7 @@ class SitemapTest extends TestCase
      */
     public function testWriteLanguages()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.'sitemap.xml', false, $this->documentRoot);
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot. $this->fileName, false, $this->documentRoot);
         $map->addItem([
             'ru' => 'http://example.com/1/81/',
             'en' => 'http://example.com/en/1/',
@@ -119,7 +119,7 @@ class SitemapTest extends TestCase
     public function testWriteOverflowUrls()
     {
         $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap(
-            $fileName = $this->documentRoot.'sitemap_w.xml',
+            $fileName = $this->documentRoot . $this->fileName,
             false,
             $this->documentRoot
         );
@@ -133,8 +133,8 @@ class SitemapTest extends TestCase
         $map->write();
 
         self::assertFileExists($fileName);
-        self::assertFileExists($path1 = $this->documentRoot.'0_sitemap_w.xml');
-        self::assertFileExists($path2 = $this->documentRoot.'1_sitemap_w.xml');
+        self::assertFileExists($path1 = $this->documentRoot.'0_sitemap.xml');
+        self::assertFileExists($path2 = $this->documentRoot.'1_sitemap.xml');
 
         $this->assertIsValidIndex($fileName);
         $this->assertIsValidSitemap($path1);
@@ -150,7 +150,7 @@ class SitemapTest extends TestCase
      */
     public function testReadSitemap()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__.'/sitemap.xml');
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . $this->fileName);
         $map->addItem('http://example.com/1');
         $map->addItem('http://example.com/2');
         $map->write();
@@ -172,7 +172,7 @@ class SitemapTest extends TestCase
      */
     public function testReadSitemapLanguages()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__.'/sitemap.xml');
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . $this->fileName);
 
         $map->addItem([
             'ru' => 'http://example.com/1/159',
@@ -212,7 +212,7 @@ class SitemapTest extends TestCase
      */
     public function testWriteSitemapGz()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__.'/sitemap.xml.gz', true);
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . $this->fileName . '.gz', true);
         $map->addItem('http://example.com/1');
         $map->addItem('http://example.com/2');
         $map->addItem('http://example.com/3');
@@ -232,13 +232,14 @@ class SitemapTest extends TestCase
      */
     public function testReadSitemapGz()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__.'/sitemap.xml.gz', true);
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . $this->fileName . '.gz', true);
         $map->addItem('http://example.com/1');
         $map->addItem('http://example.com/2');
         $map->addItem('http://example.com/3');
 
         $map->write();
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__.'/sitemap.xml.gz', true);
+
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName, true);
         $map->addItem('http://example.com/4');
 
         self::assertEquals($map->countItems(), 4);
@@ -252,7 +253,7 @@ class SitemapTest extends TestCase
      */
     public function testWriteOverflowUrlsGz()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = __DIR__.'/sitemap.xml.gz', true, __DIR__);
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . $this->fileName . '.gz', true, __DIR__);
         $map->setMaxUrls(300);
 
         for ($i = 0; $i < 600; $i++) {
@@ -262,16 +263,16 @@ class SitemapTest extends TestCase
         $map->write();
 
         self::assertFileExists($fileName);
-        self::assertFileExists($path1 = __DIR__.'/0_sitemap.xml.gz');
-        self::assertFileExists($path2 = __DIR__.'/1_sitemap.xml.gz');
+        self::assertFileExists($p1 = $this->documentRoot. '0_' . $this->fileName . '.gz');
+        self::assertFileExists($p2 = $this->documentRoot. '1_' . $this->fileName . '.gz');
 
         $this->assertIsValidIndex($fileName);
-        $this->assertIsValidSitemap($path1);
-        $this->assertIsValidSitemap($path2);
+        $this->assertIsValidSitemap($p1);
+        $this->assertIsValidSitemap($p2);
 
         unlink($fileName);
-        unlink($path1);
-        unlink($path2);
+        unlink($p1);
+        unlink($p2);
     }
 
     /**
@@ -288,6 +289,7 @@ class SitemapTest extends TestCase
 
         $map->addItem('http://example.com/3');
         $map->addItem('http://example.com/3'); // Дубликат
+
         $map->removeItem('http://example.com/4');
 
         self::assertEquals($map->countItems(), 3);
