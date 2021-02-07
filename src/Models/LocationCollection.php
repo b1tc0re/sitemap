@@ -101,6 +101,7 @@ class LocationCollection implements \IteratorAggregate, Countable
     {
         if ($index = $this->search($value)) {
             unset($this->items[$index]);
+            $this->count--;
         }
     }
 
