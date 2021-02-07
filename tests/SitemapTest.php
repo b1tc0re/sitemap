@@ -290,9 +290,10 @@ class SitemapTest extends TestCase
         $map->addItem('http://example.com/3');
         $map->addItem('http://example.com/3'); // Дубликат
 
-        $map->removeItem('http://example.com/4');
+        $map->removeItem('http://example.com/4'); // fake
+        $map->removeItem('http://example.com/3');
 
-        self::assertEquals($map->countItems(), 3);
+        self::assertEquals($map->countItems(), 2);
         $this->assertIsValidSitemap($fileName);
         unlink($fileName);
     }
