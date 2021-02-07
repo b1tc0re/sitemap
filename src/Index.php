@@ -70,7 +70,7 @@ class Index
      */
     public function addSitemap($location, $lastModified = null)
     {
-        $this->collection->addNotExist(new Models\UrlModel([
+        $this->collection->addUpdateExist(new Models\UrlModel([
             'location'      => $location,
             'lastModified'  => $lastModified,
         ]));
@@ -83,13 +83,15 @@ class Index
      *
      * @param string $location - Указывает местоположение файла Sitemap
      *
-     * @return void
+     * @return $this
      */
     public function removeSitemap($location)
     {
         $this->collection->remove(new UrlModel([
             'location' => $location,
         ]));
+
+        return $this;
     }
 
     /**

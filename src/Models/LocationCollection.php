@@ -66,6 +66,23 @@ class LocationCollection implements \IteratorAggregate, Countable
     }
 
     /**
+     * Добавить новый адрес если он не сушествует
+     *
+     * @param UrlModel $value
+     */
+    public function addUpdateExist(UrlModel $value)
+    {
+        if( $index = $this->search($value) )
+        {
+            $this->items[$index] = $value;
+        }
+        else
+        {
+            $this->add($value);
+        }
+    }
+
+    /**
      * Добавить новый адрес
      *
      * @param UrlModel $value

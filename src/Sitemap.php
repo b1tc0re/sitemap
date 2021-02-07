@@ -125,7 +125,7 @@ class Sitemap
      * @param null         $changeFreq - Вероятная частота изменения этой страницы
      * @param null         $priority   - Приоритетность URL относительно других URL на Вашем сайте.
      *
-     * @return void
+     * @return $this
      */
     public function addItem($location, $lastMod = null, $changeFreq = null, $priority = null)
     {
@@ -145,7 +145,9 @@ class Sitemap
             $model->setLocation($location);
         }
 
-        $this->collection->addNotExist($model);
+        $this->collection->addUpdateExist($model);
+
+        return $this;
     }
 
     /**
@@ -153,11 +155,12 @@ class Sitemap
      *
      * @param string $location
      *
-     * @return void
+     * @return $this
      */
     public function removeItem($location)
     {
         $this->collection->remove(new UrlModel(['location' => $location]));
+        return $this;
     }
 
     /**
