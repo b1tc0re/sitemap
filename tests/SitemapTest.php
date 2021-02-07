@@ -273,4 +273,25 @@ class SitemapTest extends TestCase
         unlink($path1);
         unlink($path2);
     }
+
+    /**
+     * Проверка метода удаления
+     */
+    public function testRemoveMethod()
+    {
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot . 'sitemap.xml');
+        $map->addItem('http://example.com/1');
+        $map->addItem('http://example.com/2');
+        $map->write();
+
+        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName);
+
+        $map->addItem('http://example.com/3');
+        $map->addItem('http://example.com/3'); // Дубликат
+        $map->removeItem('http://example.com/4');
+
+        self::assertEquals($map->countItems(), 3);
+        $this->assertIsValidSitemap($fileName);
+        unlink($fileName);
+    }
 }
