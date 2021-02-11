@@ -21,7 +21,9 @@
     "ext-zlib": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "8.5.14"
+    "phpunit/phpunit": "8.5.14",
+    "ayesh/php-timer": "v2.2.0",
+    "ext-dom": "*"
   },
   "autoload": {
     "psr-4": {
