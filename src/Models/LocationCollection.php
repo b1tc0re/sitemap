@@ -3,6 +3,7 @@
 namespace DeftCMS\Components\b1tc0re\Sitemap\Models;
 
 use Countable;
+use IteratorAggregate;
 use Traversable;
 
 /**
@@ -11,7 +12,7 @@ use Traversable;
  *
  * @since	    Version 0.0.9a
  */
-class LocationCollection implements \IteratorAggregate, Countable
+class LocationCollection implements IteratorAggregate, Countable
 {
     /**
      * Колекция.
@@ -86,7 +87,8 @@ class LocationCollection implements \IteratorAggregate, Countable
      */
     public function add(UrlModel $value)
     {
-        $this->items[$this->count++] = $value;
+        $this->count++;
+        $this->items[$value->getLocation()] = $value;
     }
 
     /**
@@ -164,17 +166,13 @@ class LocationCollection implements \IteratorAggregate, Countable
      *
      * @param UrlModel $element
      *
-     * @return int|false
+     * @return string|false
      */
     public function search(UrlModel $element)
     {
-        /**
-         * @var UrlModel $item
-         */
-        foreach ($this->items as $index => $item) {
-            if ($item->getLocation() === $element->getLocation()) {
-                return $index;
-            }
+        if( isset($this->items[$element->getLocation()]) )
+        {
+            return $element->getLocation();
         }
 
         return false;
