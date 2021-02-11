@@ -1,15 +1,29 @@
 <?php
 
+use DeftCMS\Components\b1tc0re\Sitemap\Index;
 use PHPUnit\Framework\TestCase;
 
 class IndexTest extends TestCase
 {
     /**
+     * Путь к корневой папке
+     *
+     * @var string
+     */
+    private $documentRoot = __DIR__.DIRECTORY_SEPARATOR;
+
+    /**
+     * Название файла карты сайта
+     * @var string
+     */
+    private $fileName = 'siteindex';
+
+    /**
      * Подтверждает действительность siteindex согласно схеме XSD.
      *
      * @param string $fileName
      */
-    protected function assertIsValidIndex($fileName)
+    protected function assertIsValidIndex($fileName): void
     {
         $content = $this->getIsGzipContent(file_get_contents($fileName), $fileName);
 
@@ -27,144 +41,72 @@ class IndexTest extends TestCase
      *
      * @return string
      */
-    protected function getIsGzipContent($content, $path)
+    protected function getIsGzipContent($content, $path): string
     {
         $startSequence = pack('H*', '1F8B08');
 
         if (strpos($content, $startSequence, 1) !== false) {
-            return $content = gzinflate(substr($content, 10, -8));
+            return gzinflate(substr($content, 10, -8));
         }
 
         return pathinfo($path, PATHINFO_EXTENSION) !== 'gz' ? $content : gzinflate(substr($content, 10, -8));
     }
 
     /**
-     * Запись карты сайта.
+     * Проверка добовления, удаление и запись карты сайта
      */
-    public function testWritingFile()
+    public function testAddItemRemoveAndWrite(): void
     {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml');
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
+        $index = new Index($this->documentRoot . $this->fileName, false, false);
+
+        // Проверка правильности добавление ссылок
+        $index->addSitemap('https://example.com/path/to/document/1/');
+        $index->addSitemap('https://example.com/path/to/document/2/');
+        $index->addSitemap('https://example.com/path/to/document/3/');
+        self::assertEquals(3, $index->countItems());
+
+        // Проверка удаление ссылок
+        $index->removeSitemap('https://example.com/path/to/document/3/');
+        self::assertEquals(2, $index->countItems());
+
+        // Проверка дубликатов
+        $index->addSitemap('https://example.com/path/to/document/2/');
+        self::assertEquals(2, $index->countItems());
+
         $index->write();
 
-        self::assertFileExists($fileName);
-        $this->assertIsValidIndex($fileName);
+        self::assertFileExists($index->getFilePath());
+        $this->assertIsValidIndex($index->getFilePath());
 
-        unlink($fileName);
+        unlink($index->getFilePath());
     }
 
     /**
-     * Прочитать карту сайта.
+     * Проверка сжатия  карты сайта (записи,читение)
      */
-    public function testReadFile()
+    public function testGzipWriteReadSitemap(): void
     {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml', false, false);
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
+        $index = new Index($this->documentRoot . $this->fileName, true, false);
+        // Проверка правильности добавление ссылок
+        $index->addSitemap('https://example.com/path/to/document/1/');
+        $index->addSitemap('https://example.com/path/to/document/2/');
+        $index->addSitemap('https://example.com/path/to/document/3/');
+
         $index->write();
 
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName);
-        $index->addSitemap('http://example.com/sitemap_3.xml');
+        self::assertFileExists($index->getFilePath());
+        $this->assertIsValidIndex($index->getFilePath());
 
-        self::assertEquals($index->countItems(), 3);
-        $this->assertIsValidIndex($fileName);
+        // Проверка читение
+        $index = new Index($this->documentRoot . $this->fileName, true, true);
+        self::assertEquals(3, $index->countItems());
 
-        unlink($fileName);
-    }
+        $index->addSitemap('https://example.com/path/to/document/4/');
+        self::assertEquals(4, $index->countItems());
 
-    /**
-     * Проверить запись карты сайта в сжатом виде.
-     */
-    public function testWritingFileGz()
-    {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml.gz', true);
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
-        $index->write();
+        self::assertFileExists($index->getFilePath());
+        $this->assertIsValidIndex($index->getFilePath());
 
-        self::assertFileExists($fileName);
-        $this->assertIsValidIndex($fileName);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Прочитать карту сайта.
-     */
-    public function testReadFileGz()
-    {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml.gz', true);
-
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
-        $index->write();
-
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName, true);
-
-        self::assertEquals($index->countItems(), 2);
-
-        $this->assertIsValidIndex($fileName);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Проверить функцию подсчета для записи.
-     */
-    public function testCountWrMethod()
-    {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml', true);
-
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
-
-        self::assertEquals($index->countItems(), 2);
-        $index->write();
-
-        self::assertEquals($index->countItems(), 2);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Проверить функцию подсчета для читения.
-     */
-    public function testCountRMethod()
-    {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml');
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
-        $index->write();
-
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName);
-        $index->addSitemap('http://example.com/sitemap_3.xml', time());
-
-        self::assertEquals($index->countItems(), 3);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Проверка удаление элемента.
-     */
-    public function testRemoveMethod()
-    {
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml', false, false);
-        $index->addSitemap('http://example.com/sitemap.xml');
-        $index->addSitemap('http://example.com/sitemap_2.xml', time());
-        $index->write();
-
-        self::assertEquals($index->countItems(), 2);
-
-        $index = new DeftCMS\Components\b1tc0re\Sitemap\Index($fileName = __DIR__.'/sitemap_index.xml');
-        $index->removeSitemap('http://example.com/sitemap_3.xml', time());
-        $index->write();
-
-        self::assertEquals($index->countItems(), 2);
-        self::assertFileExists($fileName);
-        $this->assertIsValidIndex($fileName);
-
-        unlink($fileName);
+        unlink($index->getFilePath());
     }
 }
