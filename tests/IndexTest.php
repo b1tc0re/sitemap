@@ -82,7 +82,7 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Проверка сжатия  карты сайта (записи,читение)
+     * Проверка сжатия карты сайта (записи,читение)
      */
     public function testGzipWriteReadSitemap(): void
     {
