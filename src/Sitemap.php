@@ -24,7 +24,8 @@ class Sitemap
     protected $filePath;
 
     /**
-     * Путь к картам сайта если превысило maxUrls
+     * Путь к картам сайта если превысило maxUrls.
+     *
      * @var array
      */
     protected $filePathParts;
@@ -81,10 +82,9 @@ class Sitemap
      */
     public function __construct($filePath, $useGzip = false, $documentRoot = null, $read = true)
     {
-        $this->useGzipCompress  = $useGzip;
-        $this->collection       = new LocationCollection();
-        $this->filePath         = $this->normalizeFilePath($filePath);
-
+        $this->useGzipCompress = $useGzip;
+        $this->collection = new LocationCollection();
+        $this->filePath = $this->normalizeFilePath($filePath);
 
         $this->setDocumentRoot($documentRoot);
         $read && file_exists($this->filePath) && $this->fillCollection($this->getFilePath());
@@ -194,7 +194,8 @@ class Sitemap
     }
 
     /**
-     * Получить название файлов если произошло разделение на файлы
+     * Получить название файлов если произошло разделение на файлы.
+     *
      * @return array
      */
     public function getFilePathParts()
@@ -262,7 +263,7 @@ class Sitemap
             $writer->endDocument();
             $path = $this->getFilePath();
 
-            if( $chunks > 1 ) {
+            if ($chunks > 1) {
                 $path = $this->getFilePathForIndexMap($index);
                 $this->filePathParts[] = $path;
             }
@@ -303,6 +304,7 @@ class Sitemap
     {
         $parts = pathinfo($this->getFilePath());
         $parts['filename'] = sprintf('%s_%s', $index, $parts['filename']);
+
         return $parts['dirname'].DIRECTORY_SEPARATOR.$parts['filename'].'.'.$parts['extension'];
     }
 
@@ -337,31 +339,34 @@ class Sitemap
     }
 
     /**
-     * Нормализовать путь к карте сайта
+     * Нормализовать путь к карте сайта.
+     *
      * @param string $path
+     *
      * @return string
      */
     protected function normalizeFilePath($path)
     {
         $parts = explode('/', $path);
-        $name       = array_pop($parts);
-        $partsName  = explode('.', $name);
+        $name = array_pop($parts);
+        $partsName = explode('.', $name);
 
-        if( $partIndex = array_search('xml', $partsName, true)) {
+        if ($partIndex = array_search('xml', $partsName, true)) {
             unset($partsName[$partIndex]);
         }
 
-        if( $partIndex = array_search('gz', $partsName, true)) {
+        if ($partIndex = array_search('gz', $partsName, true)) {
             unset($partsName[$partIndex]);
         }
 
         $partsName[] = 'xml';
 
-        if( $this->useGzipCompress ) {
+        if ($this->useGzipCompress) {
             $partsName[] = 'gz';
         }
 
         $parts[] = implode('.', $partsName);
+
         return implode('/', $parts);
     }
 

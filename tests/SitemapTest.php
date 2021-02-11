@@ -6,14 +6,15 @@ use PHPUnit\Framework\TestCase;
 class SitemapTest extends TestCase
 {
     /**
-     * Путь к корневой папке
+     * Путь к корневой папке.
      *
      * @var string
      */
     private $documentRoot = __DIR__.DIRECTORY_SEPARATOR;
 
     /**
-     * Название файла карты сайта
+     * Название файла карты сайта.
+     *
      * @var string
      */
     private $fileName = 'sitemap';
@@ -69,11 +70,11 @@ class SitemapTest extends TestCase
     }
 
     /**
-     * Проверка переполнения карты сайта
+     * Проверка переполнения карты сайта.
      */
     public function testAddItemRemoveAndWrite(): void
     {
-        $sitemap = new Sitemap($this->documentRoot . $this->fileName, false, $this->documentRoot, false);
+        $sitemap = new Sitemap($this->documentRoot.$this->fileName, false, $this->documentRoot, false);
         $sitemap->addItem('https://example.com/path/to/document/1/');
         $sitemap->addItem('https://example.com/path/to/document/2/');
         $sitemap->addItem('https://example.com/path/to/document/3/');
@@ -97,11 +98,11 @@ class SitemapTest extends TestCase
     }
 
     /**
-     * Проверка переполнения карты сайта gzip
+     * Проверка переполнения карты сайта gzip.
      */
     public function testAddItemRemoveAndWriteGz(): void
     {
-        $sitemap = new Sitemap($this->documentRoot . $this->fileName, true, $this->documentRoot, false);
+        $sitemap = new Sitemap($this->documentRoot.$this->fileName, true, $this->documentRoot, false);
         $sitemap->addItem('https://example.com/path/to/document/1/');
         $sitemap->addItem('https://example.com/path/to/document/2/');
         $sitemap->addItem('https://example.com/path/to/document/3/');
@@ -125,22 +126,22 @@ class SitemapTest extends TestCase
     }
 
     /**
-     * Проверка Sitemap для локализованных страниц
+     * Проверка Sitemap для локализованных страниц.
      */
     public function testMultilingualSitemap()
     {
-        $sitemap = new Sitemap($this->documentRoot . $this->fileName, false, $this->documentRoot, false);
+        $sitemap = new Sitemap($this->documentRoot.$this->fileName, false, $this->documentRoot, false);
         $sitemap->addItem([
             'en' => 'https://example.com/en/path/to/document/1/',
-            'ru' => 'https://example.com/ru/path/to/document/1/'
+            'ru' => 'https://example.com/ru/path/to/document/1/',
         ]);
         $sitemap->addItem([
             'en' => 'https://example.com/en/path/to/document/2/',
-            'ru' => 'https://example.com/ru/path/to/document/2/'
+            'ru' => 'https://example.com/ru/path/to/document/2/',
         ]);
         $sitemap->addItem([
             'en' => 'https://example.com/en/path/to/document/3/',
-            'ru' => 'https://example.com/ru/path/to/document/3/'
+            'ru' => 'https://example.com/ru/path/to/document/3/',
         ]);
 
         self::assertEquals(3, $sitemap->countItems());
@@ -154,16 +155,15 @@ class SitemapTest extends TestCase
     }
 
     /**
-     * Проверка ограничений макс. кол. адресов
+     * Проверка ограничений макс. кол. адресов.
      */
     public function testMaxUrls(): void
     {
-        $sitemap = new Sitemap($this->documentRoot . $this->fileName, false, $this->documentRoot, false);
+        $sitemap = new Sitemap($this->documentRoot.$this->fileName, false, $this->documentRoot, false);
         $sitemap->setMaxUrls(5);
 
-        for ($i = 0; $i < 10; $i++)
-        {
-            $sitemap->addItem('https://example.com/path/to/document/'. $i .'/');
+        for ($i = 0; $i < 10; $i++) {
+            $sitemap->addItem('https://example.com/path/to/document/'.$i.'/');
         }
 
         $sitemap->write();
@@ -173,8 +173,7 @@ class SitemapTest extends TestCase
 
         unlink($sitemap->getFilePath());
 
-        foreach ($sitemap->getFilePathParts() as $path)
-        {
+        foreach ($sitemap->getFilePathParts() as $path) {
             self::assertFileExists($path);
             $this->assertIsValidSitemap($path);
             unlink($path);
@@ -182,27 +181,25 @@ class SitemapTest extends TestCase
     }
 
     /**
-     * Проверка читение карты сайта
+     * Проверка читение карты сайта.
      */
     public function testMaxUrlsReadSitemapParts(): void
     {
-        $sitemap = new Sitemap($this->documentRoot . $this->fileName, true, $this->documentRoot, false);
+        $sitemap = new Sitemap($this->documentRoot.$this->fileName, true, $this->documentRoot, false);
         $sitemap->setMaxUrls(5);
 
-        for ($i = 0; $i < 10; $i++)
-        {
-            $sitemap->addItem('https://example.com/path/to/document/'. $i .'/');
+        for ($i = 0; $i < 10; $i++) {
+            $sitemap->addItem('https://example.com/path/to/document/'.$i.'/');
         }
 
         $sitemap->write();
 
-        $sitemap = new Sitemap($this->documentRoot . $this->fileName, true, $this->documentRoot, true);
+        $sitemap = new Sitemap($this->documentRoot.$this->fileName, true, $this->documentRoot, true);
 
         self::assertEquals(10, $sitemap->countItems());
 
         unlink($sitemap->getFilePath());
-        foreach ($sitemap->getFilePathParts() as $path)
-        {
+        foreach ($sitemap->getFilePathParts() as $path) {
             self::assertFileExists($path);
             $this->assertIsValidSitemap($path);
             unlink($path);

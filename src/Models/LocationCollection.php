@@ -170,8 +170,7 @@ class LocationCollection implements IteratorAggregate, Countable
      */
     public function search(UrlModel $element)
     {
-        if( isset($this->items[$element->getLocation()]) )
-        {
+        if (isset($this->items[$element->getLocation()])) {
             return $element->getLocation();
         }
 
