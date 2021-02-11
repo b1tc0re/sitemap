@@ -43,9 +43,9 @@ class Index
      */
     public function __construct($filePath, bool $useGzip = false, $read = true)
     {
-        $this->filePath = $filePath;
-        $this->useGzipCompress = $useGzip;
-        $this->collection = new LocationCollection();
+        $this->useGzipCompress  = $useGzip;
+        $this->filePath         = $this->normalizeFilePath($filePath);
+        $this->collection       = new LocationCollection();
 
         $read && file_exists($this->filePath) && $this->fillCollection();
     }
@@ -138,6 +138,35 @@ class Index
         }
 
         file_put_contents($path, $writer->flush());
+    }
+
+    /**
+     * Нормализовать путь к карте сайта
+     * @param string $path
+     * @return string
+     */
+    protected function normalizeFilePath($path)
+    {
+        $parts = explode('/', $path);
+        $name       = array_pop($parts);
+        $partsName  = explode('.', $name);
+
+        if( $partIndex = array_search('xml', $partsName, true)) {
+            unset($partsName[$partIndex]);
+        }
+
+        if( $partIndex = array_search('gz', $partsName, true)) {
+            unset($partsName[$partIndex]);
+        }
+
+        $partsName[] = 'xml';
+
+        if( $this->useGzipCompress ) {
+            $partsName[] = 'gz';
+        }
+
+        $parts[] = implode('.', $partsName);
+        return implode('/', $parts);
     }
 
     /**
