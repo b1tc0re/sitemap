@@ -389,7 +389,7 @@ class Sitemap
             if (property_exists($reader, 'sitemap')) {
                 foreach ($reader->sitemap as $element) {
                     if (property_exists($element, 'loc')) {
-                        $this->fillCollection($this->getPathToSitemap((string) $element->loc));
+                        $this->fillCollection($this->filePathParts[] = $this->getPathToSitemap((string) $element->loc));
                     }
                 }
             }
