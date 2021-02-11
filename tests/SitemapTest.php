@@ -1,22 +1,22 @@
 <?php
 
+use DeftCMS\Components\b1tc0re\Sitemap\Sitemap;
 use PHPUnit\Framework\TestCase;
 
 class SitemapTest extends TestCase
 {
     /**
-     * Root document.
+     * Путь к корневой папке
      *
      * @var string
      */
-    protected $documentRoot = __DIR__.DIRECTORY_SEPARATOR;
+    private $documentRoot = __DIR__.DIRECTORY_SEPARATOR;
 
     /**
-     * Sitemap filename.
-     *
+     * Название файла карты сайта
      * @var string
      */
-    protected $fileName = 'sitemap.xml';
+    private $fileName = 'sitemap';
 
     /**
      * Подтверждает действительность sitemap согласно схеме XSD.
@@ -24,7 +24,7 @@ class SitemapTest extends TestCase
      * @param string $fileName
      * @param bool   $xhtml
      */
-    protected function assertIsValidSitemap($fileName, $xhtml = false)
+    private function assertIsValidSitemap($fileName, $xhtml = false): void
     {
         $content = $this->getIsGzipContent(file_get_contents($fileName), $fileName);
         $xsdFileName = $xhtml ? 'sitemap_xhtml.xsd' : 'sitemap.xsd';
@@ -39,13 +39,14 @@ class SitemapTest extends TestCase
      *
      * @param string $fileName
      */
-    protected function assertIsValidIndex($fileName)
+    private function assertIsValidIndex($fileName): void
     {
         $content = $this->getIsGzipContent(file_get_contents($fileName), $fileName);
+
         $xml = new \DOMDocument();
         $xml->loadXML($content);
 
-        self::assertTrue($xml->schemaValidate($this->documentRoot.'/siteindex.xsd'));
+        self::assertTrue($xml->schemaValidate(__DIR__.'/siteindex.xsd'));
     }
 
     /**
@@ -56,245 +57,155 @@ class SitemapTest extends TestCase
      *
      * @return string
      */
-    protected function getIsGzipContent($content, $path)
+    private function getIsGzipContent($content, $path): string
     {
         $startSequence = pack('H*', '1F8B08');
 
         if (strpos($content, $startSequence, 1) !== false) {
-            return $content = gzinflate(substr($content, 10, -8));
+            return gzinflate(substr($content, 10, -8));
         }
 
         return pathinfo($path, PATHINFO_EXTENSION) !== 'gz' ? $content : gzinflate(substr($content, 10, -8));
     }
 
     /**
-     * Проверить запись карты сайта.
+     * Проверка переполнения карты сайта
      */
-    public function testWriteSitemap()
+    public function testAddItemRemoveAndWrite(): void
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.'sitemap.xml', false, $this->documentRoot);
-        $map->addItem('http://example.com/1');
-        $map->addItem('http://example.com/2');
+        $sitemap = new Sitemap($this->documentRoot . $this->fileName, false, $this->documentRoot, false);
+        $sitemap->addItem('https://example.com/path/to/document/1/');
+        $sitemap->addItem('https://example.com/path/to/document/2/');
+        $sitemap->addItem('https://example.com/path/to/document/3/');
 
-        self::assertEquals($map->countItems(), 2);
+        self::assertEquals(3, $sitemap->countItems());
 
-        $map->write();
+        // Проверка удаление ссылок
+        $sitemap->removeItem('https://example.com/path/to/document/3/');
+        self::assertEquals(2, $sitemap->countItems());
 
-        self::assertFileExists($fileName);
-        $this->assertIsValidSitemap($fileName);
+        // Проверка дубликатов
+        $sitemap->addItem('https://example.com/path/to/document/2/');
+        self::assertEquals(2, $sitemap->countItems());
 
-        unlink($fileName);
+        $sitemap->write();
+
+        self::assertFileExists($sitemap->getFilePath());
+        $this->assertIsValidSitemap($sitemap->getFilePath());
+
+        unlink($sitemap->getFilePath());
     }
 
     /**
-     * Проверить схему с языками.
+     * Проверка переполнения карты сайта gzip
      */
-    public function testWriteLanguages()
+    public function testAddItemRemoveAndWriteGz(): void
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.$this->fileName, false, $this->documentRoot);
-        $map->addItem([
-            'ru' => 'http://example.com/1/81/',
-            'en' => 'http://example.com/en/1/',
-            'us' => 'http://example.com/us/1/',
-        ]);
+        $sitemap = new Sitemap($this->documentRoot . $this->fileName, true, $this->documentRoot, false);
+        $sitemap->addItem('https://example.com/path/to/document/1/');
+        $sitemap->addItem('https://example.com/path/to/document/2/');
+        $sitemap->addItem('https://example.com/path/to/document/3/');
 
-        $map->addItem([
-            'ru' => 'http://example.com/2/',
-            'en' => 'http://example.com/en/2/',
-            'us' => 'http://example.com/us/2/',
-        ]);
+        self::assertEquals(3, $sitemap->countItems());
 
-        self::assertEquals($map->countItems(), 2);
-        $map->write();
+        // Проверка удаление ссылок
+        $sitemap->removeItem('https://example.com/path/to/document/3/');
+        self::assertEquals(2, $sitemap->countItems());
 
-        self::assertFileExists($fileName);
-        $this->assertIsValidSitemap($fileName, true);
+        // Проверка дубликатов
+        $sitemap->addItem('https://example.com/path/to/document/2/');
+        self::assertEquals(2, $sitemap->countItems());
 
-        unlink($fileName);
+        $sitemap->write();
+
+        self::assertFileExists($sitemap->getFilePath());
+        $this->assertIsValidSitemap($sitemap->getFilePath());
+
+        unlink($sitemap->getFilePath());
     }
 
     /**
-     * Проверить максимальное количество адресов.
+     * Проверка Sitemap для локализованных страниц
      */
-    public function testWriteOverflowUrls()
+    public function testMultilingualSitemap()
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap(
-            $fileName = $this->documentRoot.$this->fileName,
-            false,
-            $this->documentRoot
-        );
+        $sitemap = new Sitemap($this->documentRoot . $this->fileName, false, $this->documentRoot, false);
+        $sitemap->addItem([
+            'en' => 'https://example.com/en/path/to/document/1/',
+            'ru' => 'https://example.com/ru/path/to/document/1/'
+        ]);
+        $sitemap->addItem([
+            'en' => 'https://example.com/en/path/to/document/2/',
+            'ru' => 'https://example.com/ru/path/to/document/2/'
+        ]);
+        $sitemap->addItem([
+            'en' => 'https://example.com/en/path/to/document/3/',
+            'ru' => 'https://example.com/ru/path/to/document/3/'
+        ]);
 
-        $map->setMaxUrls(300);
+        self::assertEquals(3, $sitemap->countItems());
 
-        for ($i = 0; $i < 600; $i++) {
-            $map->addItem("http://example.com/{$i}");
+        $sitemap->write();
+
+        self::assertFileExists($sitemap->getFilePath());
+        $this->assertIsValidSitemap($sitemap->getFilePath(), true);
+
+        unlink($sitemap->getFilePath());
+    }
+
+    /**
+     * Проверка ограничений макс. кол. адресов
+     */
+    public function testMaxUrls(): void
+    {
+        $sitemap = new Sitemap($this->documentRoot . $this->fileName, false, $this->documentRoot, false);
+        $sitemap->setMaxUrls(5);
+
+        for ($i = 0; $i < 10; $i++)
+        {
+            $sitemap->addItem('https://example.com/path/to/document/'. $i .'/');
         }
 
-        $map->write();
+        $sitemap->write();
 
-        self::assertFileExists($fileName);
-        self::assertFileExists($path1 = $this->documentRoot.'0_sitemap.xml');
-        self::assertFileExists($path2 = $this->documentRoot.'1_sitemap.xml');
+        self::assertFileExists($sitemap->getFilePath());
+        $this->assertIsValidIndex($sitemap->getFilePath());
 
-        $this->assertIsValidIndex($fileName);
-        $this->assertIsValidSitemap($path1);
-        $this->assertIsValidSitemap($path2);
+        unlink($sitemap->getFilePath());
 
-        unlink($fileName);
-        unlink($path1);
-        unlink($path2);
+        foreach ($sitemap->getFilePathParts() as $path)
+        {
+            self::assertFileExists($path);
+            $this->assertIsValidSitemap($path);
+            unlink($path);
+        }
     }
 
     /**
-     * Проверить читение карты сайта.
+     * Проверка читение карты сайта
      */
-    public function testReadSitemap()
+    public function testMaxUrlsReadSitemapParts(): void
     {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.$this->fileName);
-        $map->addItem('http://example.com/1');
-        $map->addItem('http://example.com/2');
-        $map->write();
+        $sitemap = new Sitemap($this->documentRoot . $this->fileName, true, $this->documentRoot, false);
+        $sitemap->setMaxUrls(5);
 
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName);
-
-        $map->addItem('http://example.com/3');
-        $map->addItem('http://example.com/3'); // Дубликат
-        $map->addItem('http://example.com/4');
-
-        self::assertEquals($map->countItems(), 4);
-        $this->assertIsValidSitemap($fileName);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Проверить читение карты сайта.
-     */
-    public function testReadSitemapLanguages()
-    {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.$this->fileName);
-
-        $map->addItem([
-            'ru' => 'http://example.com/1/159',
-            'en' => 'http://example.com/en/1/',
-            'us' => 'http://example.com/us/1/',
-        ]);
-
-        $map->addItem([
-            'ru' => 'http://example.com/2/',
-            'en' => 'http://example.com/en/2/',
-            'us' => 'http://example.com/us/2/',
-        ]);
-
-        $map->write();
-
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName);
-
-        $map->addItem([ // Copy
-            'ru' => 'http://example.com/2/',
-            'en' => 'http://example.com/en/2/',
-            'us' => 'http://example.com/us/2/',
-        ]);
-
-        $map->addItem([
-            'ru' => 'http://example.com/3/',
-            'en' => 'http://example.com/en/3/',
-            'us' => 'http://example.com/us/3/',
-        ]);
-
-        self::assertEquals($map->countItems(), 3);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Проверить запись сжатаю карту сайта.
-     */
-    public function testWriteSitemapGz()
-    {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.$this->fileName.'.gz', true);
-        $map->addItem('http://example.com/1');
-        $map->addItem('http://example.com/2');
-        $map->addItem('http://example.com/3');
-
-        self::assertEquals($map->countItems(), 3);
-
-        $map->write();
-
-        self::assertFileExists($fileName);
-        $this->assertIsValidSitemap($fileName, false);
-
-        unlink($fileName);
-    }
-
-    /**
-     * Проверить сжатаю карту сайта.
-     */
-    public function testReadSitemapGz()
-    {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.$this->fileName.'.gz', true);
-        $map->addItem('http://example.com/1');
-        $map->addItem('http://example.com/2');
-        $map->addItem('http://example.com/3');
-
-        $map->write();
-
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName, true);
-        $map->addItem('http://example.com/4');
-
-        self::assertEquals($map->countItems(), 4);
-        self::assertFileExists($fileName);
-        $this->assertIsValidSitemap($fileName, false);
-        unlink($fileName);
-    }
-
-    /**
-     * Проверить максимальное количество адресов.
-     */
-    public function testWriteOverflowUrlsGz()
-    {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.$this->fileName.'.gz', true, __DIR__);
-        $map->setMaxUrls(300);
-
-        for ($i = 0; $i < 600; $i++) {
-            $map->addItem("http://example.com/{$i}");
+        for ($i = 0; $i < 10; $i++)
+        {
+            $sitemap->addItem('https://example.com/path/to/document/'. $i .'/');
         }
 
-        $map->write();
+        $sitemap->write();
 
-        self::assertFileExists($fileName);
-        self::assertFileExists($p1 = $this->documentRoot.'0_'.$this->fileName.'.gz');
-        self::assertFileExists($p2 = $this->documentRoot.'1_'.$this->fileName.'.gz');
+        $sitemap = new Sitemap($this->documentRoot . $this->fileName, true, $this->documentRoot, true);
 
-        $this->assertIsValidIndex($fileName);
-        $this->assertIsValidSitemap($p1);
-        $this->assertIsValidSitemap($p2);
+        self::assertEquals(10, $sitemap->countItems());
 
-        unlink($fileName);
-        unlink($p1);
-        unlink($p2);
-    }
-
-    /**
-     * Проверка метода удаления.
-     */
-    public function testRemoveMethod()
-    {
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName = $this->documentRoot.'sitemap.xml');
-        $map->addItem('http://example.com/1');
-        $map->addItem('http://example.com/2');
-        $map->write();
-
-        $map = new DeftCMS\Components\b1tc0re\Sitemap\Sitemap($fileName);
-
-        $map->addItem('http://example.com/3');
-        $map->addItem('http://example.com/3'); // Дубликат
-
-        $map->removeItem('http://example.com/4'); // fake
-        $map->removeItem('http://example.com/3');
-
-        self::assertEquals($map->countItems(), 2);
-        $this->assertIsValidSitemap($fileName);
-        unlink($fileName);
+        unlink($sitemap->getFilePath());
+        foreach ($sitemap->getFilePathParts() as $path)
+        {
+            self::assertFileExists($path);
+            $this->assertIsValidSitemap($path);
+            unlink($path);
+        }
     }
 }
