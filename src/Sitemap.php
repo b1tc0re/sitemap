@@ -24,6 +24,12 @@ class Sitemap
     protected $filePath;
 
     /**
+     * Путь к картам сайта если превысило maxUrls
+     * @var array
+     */
+    protected $filePathParts;
+
+    /**
      * @var LocationCollection
      */
     protected $collection;
@@ -75,9 +81,10 @@ class Sitemap
      */
     public function __construct($filePath, $useGzip = false, $documentRoot = null, $read = true)
     {
-        $this->filePath = $filePath;
-        $this->useGzipCompress = $useGzip;
-        $this->collection = new LocationCollection();
+        $this->useGzipCompress  = $useGzip;
+        $this->collection       = new LocationCollection();
+        $this->filePath         = $this->normalizeFilePath($filePath);
+
 
         $this->setDocumentRoot($documentRoot);
         $read && file_exists($this->filePath) && $this->fillCollection($this->getFilePath());
@@ -135,6 +142,8 @@ class Sitemap
             'priority'          => $priority,
         ]);
 
+        is_array($location) && count($location) === 1 && $location = array_shift($location);
+
         if (is_array($location)) {
             $this->useXhtmlNs = true;
 
@@ -185,16 +194,22 @@ class Sitemap
     }
 
     /**
+     * Получить название файлов если произошло разделение на файлы
+     * @return array
+     */
+    public function getFilePathParts()
+    {
+        return $this->filePathParts;
+    }
+
+    /**
      * Записать данные в карту.
      *
-     * @param null|bool $gzip
      *
      * @return $this
      */
-    public function write($gzip = null)
+    public function write()
     {
-        $gzip === null || $this->useGzipCompress = $gzip;
-
         $collections = $this->collection->chunk($this->maxUrls, $chunks);
 
         $chunks > 1 && $indexMap = new Index($this->getFilePath(), $this->useGzipCompress);
@@ -245,8 +260,13 @@ class Sitemap
 
             $writer->endElement();
             $writer->endDocument();
+            $path = $this->getFilePath();
 
-            $chunks > 1 ? $path = $this->getFilePathForIndexMap($index) : $path = $this->getFilePath();
+            if( $chunks > 1 ) {
+                $path = $this->getFilePathForIndexMap($index);
+                $this->filePathParts[] = $path;
+            }
+
             $this->writeToDisk($writer, $path);
             $chunks > 1 && $indexMap->addSitemap($this->getUrlForSitemap($path));
         }
@@ -265,7 +285,7 @@ class Sitemap
     protected function writeToDisk(\XMLWriter $writer, $path)
     {
         if ($this->useGzipCompress) {
-            pathinfo($path, PATHINFO_EXTENSION) !== 'gz' && $path = $this->filePath = $this->filePath . '.gz';
+            pathinfo($path, PATHINFO_EXTENSION) !== 'gz' && $path = $this->filePath .= '.gz';
             $path = 'compress.zlib://'.$path;
         }
 
@@ -283,7 +303,6 @@ class Sitemap
     {
         $parts = pathinfo($this->getFilePath());
         $parts['filename'] = sprintf('%s_%s', $index, $parts['filename']);
-
         return $parts['dirname'].DIRECTORY_SEPARATOR.$parts['filename'].'.'.$parts['extension'];
     }
 
@@ -315,6 +334,35 @@ class Sitemap
         $path = $this->documentRoot.DIRECTORY_SEPARATOR.parse_url($url, PHP_URL_PATH);
 
         return preg_replace('#(^|[^:])//+#', '\\1/', $path);
+    }
+
+    /**
+     * Нормализовать путь к карте сайта
+     * @param string $path
+     * @return string
+     */
+    protected function normalizeFilePath($path)
+    {
+        $parts = explode('/', $path);
+        $name       = array_pop($parts);
+        $partsName  = explode('.', $name);
+
+        if( $partIndex = array_search('xml', $partsName, true)) {
+            unset($partsName[$partIndex]);
+        }
+
+        if( $partIndex = array_search('gz', $partsName, true)) {
+            unset($partsName[$partIndex]);
+        }
+
+        $partsName[] = 'xml';
+
+        if( $this->useGzipCompress ) {
+            $partsName[] = 'gz';
+        }
+
+        $parts[] = implode('.', $partsName);
+        return implode('/', $parts);
     }
 
     /**
