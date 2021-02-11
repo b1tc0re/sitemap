@@ -6,14 +6,15 @@ use PHPUnit\Framework\TestCase;
 class IndexTest extends TestCase
 {
     /**
-     * Путь к корневой папке
+     * Путь к корневой папке.
      *
      * @var string
      */
     private $documentRoot = __DIR__.DIRECTORY_SEPARATOR;
 
     /**
-     * Название файла карты сайта
+     * Название файла карты сайта.
+     *
      * @var string
      */
     private $fileName = 'siteindex';
@@ -53,11 +54,11 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Проверка добовления, удаление и запись карты сайта
+     * Проверка добовления, удаление и запись карты сайта.
      */
     public function testAddItemRemoveAndWrite(): void
     {
-        $index = new Index($this->documentRoot . $this->fileName, false, false);
+        $index = new Index($this->documentRoot.$this->fileName, false, false);
 
         // Проверка правильности добавление ссылок
         $index->addSitemap('https://example.com/path/to/document/1/');
@@ -82,11 +83,11 @@ class IndexTest extends TestCase
     }
 
     /**
-     * Проверка сжатия карты сайта (записи,читение)
+     * Проверка сжатия карты сайта (записи,читение).
      */
     public function testGzipWriteReadSitemap(): void
     {
-        $index = new Index($this->documentRoot . $this->fileName, true, false);
+        $index = new Index($this->documentRoot.$this->fileName, true, false);
         // Проверка правильности добавление ссылок
         $index->addSitemap('https://example.com/path/to/document/1/');
         $index->addSitemap('https://example.com/path/to/document/2/');
@@ -98,7 +99,7 @@ class IndexTest extends TestCase
         $this->assertIsValidIndex($index->getFilePath());
 
         // Проверка читение
-        $index = new Index($this->documentRoot . $this->fileName, true, true);
+        $index = new Index($this->documentRoot.$this->fileName, true, true);
         self::assertEquals(3, $index->countItems());
 
         $index->addSitemap('https://example.com/path/to/document/4/');
